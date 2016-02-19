@@ -388,14 +388,18 @@ class AnnotationBuilder implements EventManagerAwareInterface, FormFactoryAwareI
      */
     protected function discoverName($annotations, $reflection)
     {
-        $results = $this->getEventManager()->triggerUntil(function ($r) {
-                return (is_string($r) && !empty($r));
-            },
+        $event = new Event(
             'discoverName',
-            $this, [
+            $this,
+            [
                 'annotations' => $annotations,
                 'reflection'  => $reflection,
             ]
+        );
+        $results = $this->getEventManager()->triggerEventUntil(function ($r) {
+                return (is_string($r) && !empty($r));
+            },
+            $event
         );
         return $results->last();
     }
@@ -408,13 +412,17 @@ class AnnotationBuilder implements EventManagerAwareInterface, FormFactoryAwareI
      */
     protected function checkForExclude($annotations)
     {
-        $results = $this->getEventManager()->triggerUntil(function ($r) {
-                return (true === $r);
-            },
+        $event = new Event(
             'checkForExclude',
-            $this, [
+            $this,
+            [
                 'annotations' => $annotations,
             ]
+        );
+        $results = $this->getEventManager()->triggerEventUntil(function ($r) {
+                return (true === $r);
+            },
+            $event
         );
         return (bool) $results->last();
     }
