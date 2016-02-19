@@ -101,38 +101,73 @@ class FormElementManager extends AbstractPluginManager
      * @var array
      */
     protected $factories = [
-        Element\Button::class         => ElementFactory::class,
-        Element\Captcha::class        => ElementFactory::class,
-        Element\Checkbox::class       => ElementFactory::class,
-        Element\Collection::class     => ElementFactory::class,
-        Element\Color::class          => ElementFactory::class,
-        Element\Csrf::class           => ElementFactory::class,
-        Element\Date::class           => ElementFactory::class,
-        Element\DateSelect::class     => ElementFactory::class,
-        Element\DateTime::class       => ElementFactory::class,
-        Element\DateTimeLocal::class  => ElementFactory::class,
-        Element\DateTimeSelect::class => ElementFactory::class,
-        Element::class                => ElementFactory::class,
-        Element\Email::class          => ElementFactory::class,
-        Fieldset::class               => ElementFactory::class,
-        Element\File::class           => ElementFactory::class,
-        Form::class                   => ElementFactory::class,
-        Element\Hidden::class         => ElementFactory::class,
-        Element\Image::class          => ElementFactory::class,
-        Element\Month::class          => ElementFactory::class,
-        Element\MonthSelect::class    => ElementFactory::class,
-        Element\MultiCheckbox::class  => ElementFactory::class,
-        Element\Number::class         => ElementFactory::class,
-        Element\Password::class       => ElementFactory::class,
-        Element\Radio::class          => ElementFactory::class,
-        Element\Range::class          => ElementFactory::class,
-        Element\Select::class         => ElementFactory::class,
-        Element\Submit::class         => ElementFactory::class,
-        Element\Text::class           => ElementFactory::class,
-        Element\Textarea::class       => ElementFactory::class,
-        Element\Time::class           => ElementFactory::class,
-        Element\Url::class            => ElementFactory::class,
-        Element\Week::class           => ElementFactory::class,
+        Element\Button::class           => ElementFactory::class,
+        Element\Captcha::class          => ElementFactory::class,
+        Element\Checkbox::class         => ElementFactory::class,
+        Element\Collection::class       => ElementFactory::class,
+        Element\Color::class            => ElementFactory::class,
+        Element\Csrf::class             => ElementFactory::class,
+        Element\Date::class             => ElementFactory::class,
+        Element\DateSelect::class       => ElementFactory::class,
+        Element\DateTime::class         => ElementFactory::class,
+        Element\DateTimeLocal::class    => ElementFactory::class,
+        Element\DateTimeSelect::class   => ElementFactory::class,
+        Element::class                  => ElementFactory::class,
+        Element\Email::class            => ElementFactory::class,
+        Fieldset::class                 => ElementFactory::class,
+        Element\File::class             => ElementFactory::class,
+        Form::class                     => ElementFactory::class,
+        Element\Hidden::class           => ElementFactory::class,
+        Element\Image::class            => ElementFactory::class,
+        Element\Month::class            => ElementFactory::class,
+        Element\MonthSelect::class      => ElementFactory::class,
+        Element\MultiCheckbox::class    => ElementFactory::class,
+        Element\Number::class           => ElementFactory::class,
+        Element\Password::class         => ElementFactory::class,
+        Element\Radio::class            => ElementFactory::class,
+        Element\Range::class            => ElementFactory::class,
+        Element\Select::class           => ElementFactory::class,
+        Element\Submit::class           => ElementFactory::class,
+        Element\Text::class             => ElementFactory::class,
+        Element\Textarea::class         => ElementFactory::class,
+        Element\Time::class             => ElementFactory::class,
+        Element\Url::class              => ElementFactory::class,
+        Element\Week::class             => ElementFactory::class,
+
+        // v2 normalized FQCNs
+        'zendformelementbutton'         => ElementFactory::class,
+        'zendformelementcaptcha'        => ElementFactory::class,
+        'zendformelementcheckbox'       => ElementFactory::class,
+        'zendformelementcollection'     => ElementFactory::class,
+        'zendformelementcolor'          => ElementFactory::class,
+        'zendformelementcsrf'           => ElementFactory::class,
+        'zendformelementdate'           => ElementFactory::class,
+        'zendformelementdateselect'     => ElementFactory::class,
+        'zendformelementdatetime'       => ElementFactory::class,
+        'zendformelementdatetimelocal'  => ElementFactory::class,
+        'zendformelementdatetimeselect' => ElementFactory::class,
+        'zendformelement'               => ElementFactory::class,
+        'zendformelementemail'          => ElementFactory::class,
+        'zendformelementfieldset'       => ElementFactory::class,
+        'zendformelementfile'           => ElementFactory::class,
+        'zendformelementhidden'         => ElementFactory::class,
+        'zendformelementimage'          => ElementFactory::class,
+        'zendformelementmonth'          => ElementFactory::class,
+        'zendformelementmonthselect'    => ElementFactory::class,
+        'zendformelementmulticheckbox'  => ElementFactory::class,
+        'zendformelementnumber'         => ElementFactory::class,
+        'zendformelementpassword'       => ElementFactory::class,
+        'zendformelementradio'          => ElementFactory::class,
+        'zendformelementrange'          => ElementFactory::class,
+        'zendformelementselect'         => ElementFactory::class,
+        'zendformelementsubmit'         => ElementFactory::class,
+        'zendformelementtext'           => ElementFactory::class,
+        'zendformelementtextarea'       => ElementFactory::class,
+        'zendformelementtime'           => ElementFactory::class,
+        'zendformelementurl'            => ElementFactory::class,
+        'zendformelementweek'           => ElementFactory::class,
+        'zendformfieldset'                  => ElementFactory::class,
+        'zendformform'                  => ElementFactory::class,
     ];
 
     /**
@@ -238,7 +273,11 @@ class FormElementManager extends AbstractPluginManager
      */
     public function validatePlugin($instance)
     {
-        $this->validate($instance);
+        try {
+            $this->validate($instance);
+        } catch (InvalidServiceException $e) {
+            throw new Exception\InvalidElementException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
@@ -262,52 +301,6 @@ class FormElementManager extends AbstractPluginManager
     }
 
     /**
-     * Attempt to create an instance via an invokable class (v2)
-     *
-     * This method is not used internally and only exists in case extending v2 class is calling it
-     *
-     * Overrides parent implementation by passing $creationOptions to the
-     * constructor, if non-null.
-     *
-     * @deprecated
-     * @param  string $canonicalName
-     * @param  string $requestedName
-     * @return null|\stdClass
-     * @throws ServiceNotCreatedException If resolved class does not exist
-     */
-    protected function createFromInvokable($canonicalName, $requestedName)
-    {
-        trigger_error(sprintf(
-            'Usage of %s is deprecated since v3.0.0; please use aliases and factories instead',
-            __METHOD__
-        ), E_USER_DEPRECATED);
-
-        $invokable = $this->invokableClasses[$canonicalName];
-
-        if (null === $this->creationOptions
-            || (is_array($this->creationOptions) && empty($this->creationOptions))
-        ) {
-            $instance = new $invokable();
-        } else {
-            if (isset($this->creationOptions['name'])) {
-                $name = $this->creationOptions['name'];
-            } else {
-                $name = $requestedName;
-            }
-
-            if (isset($this->creationOptions['options'])) {
-                $options = $this->creationOptions['options'];
-            } else {
-                $options = $this->creationOptions;
-            }
-
-            $instance = new $invokable($name, $options);
-        }
-
-        return $instance;
-    }
-
-    /**
      * Try to pull hydrator from the creation context, or instantiates it from its name
      *
      * @param  string $hydratorName
@@ -316,7 +309,7 @@ class FormElementManager extends AbstractPluginManager
      */
     public function getHydratorFromName($hydratorName)
     {
-        if ($this->creationContext) {
+        if (property_exists($this, 'creationContext')) {
             // v3
             $services = $this->creationContext;
         } else {
@@ -355,7 +348,7 @@ class FormElementManager extends AbstractPluginManager
      */
     public function getFactoryFromName($factoryName)
     {
-        if ($this->creationContext) {
+        if (property_exists($this, 'creationContext')) {
             // v3
             $services = $this->creationContext;
         } else {

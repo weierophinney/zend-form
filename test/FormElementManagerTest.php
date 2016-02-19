@@ -9,18 +9,21 @@
 
 namespace ZendTest\Form;
 
+use Zend\Form\ElementInterface;
 use Zend\Form\Exception\InvalidElementException;
 use Zend\Form\Factory;
 use Zend\Form\Form;
 use Zend\Form\FormElementManager;
-use Zend\ServiceManager\Exception\InvalidServiceException;
 use Zend\ServiceManager\ServiceManager;
+use Zend\ServiceManager\Test\CommonPluginManagerTrait;
 
 /**
  * @group      Zend_Form
  */
 class FormElementManagerTest extends \PHPUnit_Framework_TestCase
 {
+    use CommonPluginManagerTrait;
+
     /**
      * @var FormElementManager
      */
@@ -51,27 +54,6 @@ class FormElementManagerTest extends \PHPUnit_Framework_TestCase
         $form = $this->manager->get('my-form');
         $this->assertSame($factory, $form->getFormFactory());
         $this->assertSame($this->manager, $form->getFormFactory()->getFormElementManager());
-    }
-
-    public function testRegisteringInvalidElementRaisesException()
-    {
-        $this->setExpectedException($this->getInvalidServiceException());
-        $this->manager->setService('test', $this);
-    }
-
-    public function testLoadingInvalidElementRaisesException()
-    {
-        $this->manager->setInvokableClass('test', get_class($this));
-        $this->setExpectedException($this->getInvalidServiceException());
-        $this->manager->get('test');
-    }
-
-    protected function getInvalidServiceException()
-    {
-        if (method_exists($this->manager, 'configure')) {
-            return InvalidServiceException::class;
-        }
-        return InvalidElementException::class;
     }
 
     public function testStringCreationOptions()
@@ -133,5 +115,20 @@ class FormElementManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->manager->get('sharedElement');
         $this->manager->get('sharedElement');
+    }
+
+    protected function getPluginManager()
+    {
+        return new FormElementManager(new ServiceManager());
+    }
+
+    protected function getV2InvalidPluginException()
+    {
+        return InvalidElementException::class;
+    }
+
+    protected function getInstanceOf()
+    {
+        return ElementInterface::class;
     }
 }
