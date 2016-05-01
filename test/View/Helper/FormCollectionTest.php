@@ -10,6 +10,7 @@
 namespace ZendTest\Form\View\Helper;
 
 use PHPUnit_Framework_TestCase as TestCase;
+use Zend\Form\Form;
 use Zend\Form\View\HelperConfig;
 use Zend\Form\View\Helper\FormCollection as FormCollectionHelper;
 use Zend\View\Helper\Doctype;
@@ -411,5 +412,33 @@ class FormCollectionTest extends TestCase
         $method->setAccessible(true);
 
         $method->invokeArgs(new FormCollectionHelper(), []);
+    }
+
+    /**
+     * @group 61
+     */
+    public function testSubmitElementWithoutLabelShouldNotGetPreviousElementsLabel()
+    {
+        $form = new Form();
+        $form->add([
+            'name'       => 'password',
+            'options'    => ['label' => 'Password'],
+            'attributes' => [
+                'type'        => 'password',
+                'placeholder' => 'Password',
+            ],
+        ]);
+        $form->add([
+                'name'       => 'submit',
+                'attributes' => [
+                    'type'  => 'submit',
+                    'value' => 'Login',
+                    'class' => 'btn',
+                ],
+        ]);
+
+        $markup = $this->helper->render($form);
+
+        $this->assertNotContains('<label>Password</label><button name="submit" type="submit"', $markup);
     }
 }
