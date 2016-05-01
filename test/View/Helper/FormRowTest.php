@@ -13,6 +13,7 @@ use PHPUnit_Framework_TestCase as TestCase;
 use Zend\I18n\Translator\TranslatorInterface;
 use Zend\Form\Element;
 use Zend\Form\Element\Captcha;
+use Zend\Form\Form;
 use Zend\Form\View\HelperConfig;
 use Zend\Form\View\Helper\FormRow as FormRowHelper;
 use Zend\View\Renderer\PhpRenderer;
@@ -571,5 +572,37 @@ class FormRowTest extends TestCase
                 'label' => 'baz'
             ]))
         );
+    }
+
+    /**
+     * @group 61
+     */
+    public function testSubmitElementWithoutLabelShouldNotGetPreviousElementsLabel()
+    {
+        $form = new Form();
+        $form->add([
+            'name'       => 'password',
+            'options'    => ['label' => 'Password'],
+            'attributes' => [
+                'type'        => 'password',
+                'placeholder' => 'Password',
+            ],
+        ]);
+        $form->add([
+                'name'       => 'submit',
+                'attributes' => [
+                    'type'  => 'submit',
+                    'value' => 'Login',
+                    'class' => 'btn',
+                ],
+        ]);
+
+        $markup = '';
+
+        foreach ($form as $element) {
+            $markup .= $this->helper->render($element);
+        }
+
+        $this->assertNotContains('<label>Password</label><button name="submit" type="submit"', $markup);
     }
 }
