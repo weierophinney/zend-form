@@ -605,4 +605,33 @@ class FormRowTest extends TestCase
 
         $this->assertNotContains('<label>Password</label><button name="submit" type="submit"', $markup);
     }
+
+    /**
+     * @group 61
+     */
+    public function testSubmitElementWithoutLabelShouldNotGetPreviousElementsLabelAfterFormRetrieval()
+    {
+        $form = new Form();
+        $form->add([
+            'name'       => 'password',
+            'options'    => ['label' => 'Password'],
+            'attributes' => [
+                'type'        => 'password',
+                'placeholder' => 'Password',
+            ],
+        ]);
+        $form->add([
+                'name'       => 'submit',
+                'attributes' => [
+                    'type'  => 'submit',
+                    'value' => 'Login',
+                    'class' => 'btn',
+                ],
+        ]);
+
+        $markup = $this->helper->render($form->get('password'));
+        $markup .= $this->helper->render($form->get('submit'));
+
+        $this->assertNotContains('<label>Password</label><button name="submit" type="submit"', $markup);
+    }
 }
